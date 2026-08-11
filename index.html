@@ -96,13 +96,14 @@
                                 C2
                             </div>
                         </div>
+                        <!-- CẬP NHẬT: TỔNG SẢN LƯỢNG NĂM (TẤN) TOÀN TỈNH -->
                         <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
                             <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Nhiều Đ/Lý Nhất</p>
-                                <p class="text-xs font-bold text-slate-700 truncate max-w-[90px] mt-1" id="stat-top-district">--</p>
+                                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Tổng Sản Lượng</p>
+                                <p class="text-lg font-bold text-emerald-600 mt-0.5 truncate max-w-[110px]" id="stat-total-tonnes">0 Tấn</p>
                             </div>
-                            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
-                                <i class="fa-solid fa-crown text-sm"></i>
+                            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                                <i class="fa-solid fa-scale-balanced text-sm"></i>
                             </div>
                         </div>
                     </div>
@@ -132,7 +133,7 @@
                         <div class="flex gap-2">
                             <div class="relative flex-1">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                                <input type="text" id="search-input" oninput="handleSearchInput()" placeholder="Tìm tên đại lý, chủ, SĐT..." 
+                                <input type="text" id="search-input" oninput="handleSearchInput()" placeholder="Tìm kiếm toàn tỉnh (tên, chủ, SĐT)..." 
                                        class="w-full pl-9 pr-9 py-2.5 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm">
                                 <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-200 active-touch text-slate-500 items-center justify-center text-xs">
                                     <i class="fa-solid fa-xmark"></i>
@@ -159,7 +160,7 @@
                             <span>Huyện</span>
                             <span class="text-[11px] font-semibold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full" id="current-district-count">0 đại lý</span>
                         </h2>
-                        <span class="text-[11px] text-slate-400">Chạm thẻ để xem chi tiết</span>
+                        <span class="text-[11px] text-slate-400" id="search-mode-hint">Chạm thẻ để xem chi tiết</span>
                     </div>
 
                     <!-- Agent List Container -->
@@ -172,10 +173,10 @@
                         <div class="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-xl mb-2">
                             <i class="fa-solid fa-store-slash"></i>
                         </div>
-                        <h3 class="font-semibold text-slate-700 text-sm mb-1">Chưa có đại lý nào</h3>
-                        <p class="text-xs text-slate-400 max-w-xs mb-3">Chưa có dữ liệu đại lý tại khu vực này. Bấm nút bên dưới để thêm mới.</p>
-                        <button onclick="openModal()" class="bg-emerald-600 active-touch text-white text-xs font-semibold px-4 py-2 rounded-xl">
-                            <i class="fa-solid fa-plus me-1"></i> Thêm Đại Lý Ngay
+                        <h3 class="font-semibold text-slate-700 text-sm mb-1">Không tìm thấy đại lý</h3>
+                        <p class="text-xs text-slate-400 max-w-xs mb-3">Không có kết quả phù hợp với từ khóa tìm kiếm của bạn.</p>
+                        <button onclick="clearSearch()" class="bg-slate-200 active-touch text-slate-700 text-xs font-semibold px-4 py-2 rounded-xl">
+                            Xóa tìm kiếm
                         </button>
                     </div>
 
@@ -671,6 +672,21 @@
                     { id: "f2", name: "Trần Văn Bốn", phone: "0912987654", area: "4 ha (40 công)", mapQuery: "Nhà Trần Văn Bốn Chợ Gò Quao", sales: 4.0, products: "Phân Ure + Lân Canxi" }
                 ],
                 createdAt: new Date().toISOString()
+            },
+            {
+                id: "103",
+                district: "Huyện Tân Hiệp",
+                name: "Quốc Huy",
+                owner: "Lê Quốc Huy",
+                phone: "0909123456",
+                level: "Cấp 1",
+                address: "Thị trấn Tân Hiệp",
+                mapQuery: "Đại lý Quốc Huy Tân Hiệp Kiên Giang",
+                note: "Đại lý lớn chuyên NPK",
+                targetSales: 80,
+                monthlySales: { 1: 10, 2: 12, 3: 11, 4: 10, 5: 8, 6: 5, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 },
+                farmers: [],
+                createdAt: new Date().toISOString()
             }
         ];
 
@@ -859,15 +875,12 @@
             }
         }
 
-        /* UNIFIED DELETE MODAL LOGIC (Smooth & Reliable) */
-        let deleteActionCallback = null;
-
+        /* DELETE MODAL LOGIC */
         function openDeleteModal(title, desc, onConfirm) {
             document.getElementById('delete-modal-title').textContent = title;
             document.getElementById('delete-modal-desc').innerHTML = desc;
             
             const confirmBtn = document.getElementById('confirm-delete-btn');
-            // Remove old listeners to avoid stacking
             const newBtn = confirmBtn.cloneNode(true);
             confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
 
@@ -888,18 +901,14 @@
         function confirmDeleteAgent(id) {
             const agent = agents.find(a => a.id === id);
             if (!agent) return;
-
             openDeleteModal(
                 "Xác Nhận Xóa Đại Lý",
                 `Bạn có chắc chắn muốn xóa đại lý <strong class="text-slate-800">"${agent.name}"</strong> không?`,
                 () => {
                     agents = agents.filter(a => a.id !== id);
                     saveToLocalStorage();
-                    if (activeAgentId === id) {
-                        showHomeView();
-                    } else {
-                        renderAgents();
-                    }
+                    if (activeAgentId === id) showHomeView();
+                    else renderAgents();
                     showToast("Đã xóa đại lý thành công!");
                 }
             );
@@ -908,10 +917,8 @@
         function confirmDeleteFarmer(farmerId) {
             const agent = agents.find(a => a.id === activeAgentId);
             if (!agent || !agent.farmers) return;
-
             const farmer = agent.farmers.find(f => f.id === farmerId);
             if (!farmer) return;
-
             openDeleteModal(
                 "Xác Nhận Xóa Nông Dân",
                 `Bạn có chắc muốn xóa nông dân <strong class="text-slate-800">"${farmer.name}"</strong> khỏi danh sách?`,
@@ -1033,7 +1040,7 @@
             return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(amount);
         }
 
-        /* SEARCH & DISTRICT LOGIC */
+        /* SEARCH & DISTRICT LOGIC - GLOBAL CROSS-DISTRICT SEARCH */
         function handleSearchInput() {
             const input = document.getElementById('search-input');
             const clearBtn = document.getElementById('clear-search-btn');
@@ -1133,20 +1140,27 @@
             const levelVal = document.getElementById('level-filter').value;
 
             document.getElementById('selected-district-display').textContent = currentDistrict;
-            let filtered = agents.filter(a => a.district === currentDistrict);
-
-            if (levelVal !== 'ALL') filtered = filtered.filter(a => a.level === levelVal);
-            if (searchVal) {
-                filtered = filtered.filter(a => 
+            
+            let filtered = [];
+            if (searchVal.length > 0) {
+                filtered = agents.filter(a => 
                     a.name.toLowerCase().includes(searchVal) || 
                     (a.owner && a.owner.toLowerCase().includes(searchVal)) || 
                     (a.phone && a.phone.includes(searchVal)) ||
                     (a.address && a.address.toLowerCase().includes(searchVal)) ||
                     (a.mapQuery && a.mapQuery.toLowerCase().includes(searchVal))
                 );
+                document.getElementById('search-mode-hint').textContent = `Kết quả tìm kiếm toàn tỉnh`;
+            } else {
+                filtered = agents.filter(a => a.district === currentDistrict);
+                document.getElementById('search-mode-hint').textContent = `Chạm thẻ để xem chi tiết`;
             }
 
-            document.getElementById('current-district-title').firstElementChild.textContent = currentDistrict;
+            if (levelVal !== 'ALL') {
+                filtered = filtered.filter(a => a.level === levelVal);
+            }
+
+            document.getElementById('current-district-title').firstElementChild.textContent = searchVal ? `Kết quả tìm kiếm ("${searchVal}")` : currentDistrict;
             document.getElementById('current-district-count').textContent = `${filtered.length} đại lý`;
             listContainer.innerHTML = '';
 
@@ -1172,14 +1186,21 @@
             if (agent.level === "Cấp 2") levelBadgeClass = "bg-indigo-50 text-indigo-700 border-indigo-200";
 
             const mapQueryTerm = agent.mapQuery && agent.mapQuery.trim() !== '' ? agent.mapQuery : `${agent.name} ${agent.district} Kiên Giang`;
+            
             let totalTonnes = 0;
             const monthly = agent.monthlySales || {};
             for (let m = 1; m <= 12; m++) totalTonnes += Number(monthly[m]) || 0;
 
+            const target = Number(agent.targetSales) || 0;
+            const realPercent = target > 0 ? Math.round((totalTonnes / target) * 100) : 0;
+
             div.innerHTML = `
                 <div>
                     <div class="flex items-start justify-between gap-2 mb-1.5">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${levelBadgeClass}">${agent.level}</span>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-md border ${levelBadgeClass}">${agent.level}</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md font-semibold"><i class="fa-solid fa-location-dot text-emerald-600"></i> ${agent.district}</span>
+                        </div>
                         <div class="flex items-center gap-1">
                             <button onclick="editAgent('${agent.id}')" class="w-7 h-7 rounded-lg text-slate-400 active-touch hover:text-emerald-600 flex items-center justify-center">
                                 <i class="fa-solid fa-pen-to-square text-xs"></i>
@@ -1190,10 +1211,18 @@
                         </div>
                     </div>
 
-                    <h3 class="font-bold text-slate-800 text-base mb-1 flex items-center justify-between">
-                        <span>${agent.name}</span>
-                        <i class="fa-solid fa-chevron-right text-[10px] text-slate-300"></i>
-                    </h3>
+                    <div class="flex items-center justify-between gap-2 mb-1">
+                        <h3 class="font-bold text-slate-800 text-base flex-1 truncate">
+                            ${agent.name}
+                        </h3>
+                        
+                        <div class="flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
+                            <div class="w-4 h-4 rounded-full border-2 border-emerald-500 flex items-center justify-center text-[8px] font-extrabold text-emerald-700">
+                                ✓
+                            </div>
+                            <span class="text-xs font-extrabold text-emerald-800">${realPercent}%</span>
+                        </div>
+                    </div>
 
                     <div class="space-y-1 text-xs text-slate-600 mb-2.5">
                         ${agent.owner ? `<p class="flex items-center gap-1.5"><i class="fa-regular fa-user text-slate-400 w-3.5"></i> ${agent.owner}</p>` : ''}
@@ -1223,11 +1252,19 @@
             document.getElementById('stat-total').textContent = agents.length;
             document.getElementById('stat-c1').textContent = agents.filter(a => a.level === 'Cấp 1').length;
             document.getElementById('stat-c2').textContent = agents.filter(a => a.level === 'Cấp 2').length;
+            
+            // TÍNH TỔNG SẢN LƯỢNG NĂM (TẤN) CỦA TẤT CẢ ĐẠI LÝ TRONG TOÀN TỈNH
+            let totalProvinceTonnes = 0;
+            agents.forEach(a => {
+                const monthly = a.monthlySales || {};
+                for (let m = 1; m <= 12; m++) {
+                    totalProvinceTonnes += Number(monthly[m]) || 0;
+                }
+            });
+            document.getElementById('stat-total-tonnes').textContent = `${formatTon(totalProvinceTonnes)} Tấn`;
+
             const counts = {};
             agents.forEach(a => { counts[a.district] = (counts[a.district] || 0) + 1; });
-            let topDist = "--", max = 0;
-            for (const dist in counts) { if (counts[dist] > max) { max = counts[dist]; topDist = dist; } }
-            document.getElementById('stat-top-district').textContent = topDist !== "--" ? `${topDist} (${max})` : "--";
         }
 
         function openModal(editMode = false) {
