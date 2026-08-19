@@ -100,12 +100,18 @@
                                 C2
                             </div>
                         </div>
+                        <!-- TỔNG SẢN LƯỢNG NĂM (CÓ TÍNH NĂNG ẨN/HIỆN MẬT KHẨU/BẢO MẬT) -->
                         <div class="bg-white p-3 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                            <div>
-                                <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Tổng Sản Lượng</p>
-                                <p class="text-lg font-bold text-emerald-600 mt-0.5 truncate max-w-[110px]" id="stat-total-tonnes">0 Tấn</p>
+                            <div class="flex-1 min-w-0 pr-1">
+                                <div class="flex items-center gap-1.5">
+                                    <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Tổng Sản Lượng</p>
+                                    <button onclick="toggleTotalTonnesVisibility()" class="text-slate-400 hover:text-emerald-600 active-touch text-xs" title="Ẩn / Hiện số liệu">
+                                        <i id="toggle-tonnes-icon" class="fa-solid fa-eye-slash"></i>
+                                    </button>
+                                </div>
+                                <p class="text-lg font-bold text-emerald-600 mt-0.5 truncate" id="stat-total-tonnes">*****</p>
                             </div>
-                            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                            <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold shrink-0">
                                 <i class="fa-solid fa-scale-balanced text-sm"></i>
                             </div>
                         </div>
@@ -335,16 +341,14 @@
                             </div>
                         </div>
 
-                        <!-- 12 Months Sales Breakdown -->
+                        <!-- 12 Months Sales Breakdown (MỖI THÁNG CÓ THỂ NHẤP VÀO ĐỂ NHẬP THEO TỪNG NGÀY) -->
                         <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
                             <div class="flex items-center justify-between mb-2.5 border-b border-slate-100 pb-2">
                                 <h3 class="font-bold text-slate-800 text-xs flex items-center gap-1.5">
                                     <i class="fa-solid fa-calendar-days text-emerald-600"></i>
                                     <span>Chi Tiết Doanh Số 12 Tháng (Tấn)</span>
                                 </h3>
-                                <button onclick="openConfigSalesModal()" class="text-xs text-emerald-700 font-semibold active-touch">
-                                    <i class="fa-solid fa-pen-to-square"></i> Sửa các tháng
-                                </button>
+                                <span class="text-[10px] text-slate-400">Chạm vào tháng để nhập theo ngày</span>
                             </div>
 
                             <div class="grid grid-cols-3 sm:grid-cols-4 gap-2" id="monthly-sales-grid">
@@ -388,6 +392,60 @@
                                 <p class="text-xs font-semibold text-slate-600">Chưa có danh sách nông dân</p>
                                 <p class="text-[10px] text-slate-400 mt-0.5">Bấm nút "Thêm Nông Dân" để bắt đầu lưu thông tin.</p>
                             </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+
+            <!-- Footer -->
+            <footer class="bg-slate-900 text-slate-300 text-[11px] py-3.5 px-4 mt-6 border-t border-slate-800 text-center pb-safe shrink-0">
+                <div class="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-1.5">
+                    <p class="flex items-center gap-1 text-slate-400">
+                        <i class="fa-solid fa-copyright text-emerald-500"></i>
+                        <span>Được Phát Triển Bởi <strong class="text-white font-semibold">Khoa Hoa Kỳ</strong></span>
+                    </p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-slate-400">Cần hỗ trợ:</span>
+                        <a href="tel:0845325488" class="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold active-touch">
+                            <i class="fa-solid fa-headset text-[10px] me-1"></i>0845.325.488
+                        </a>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- ================= MÀN HÌNH QUẢN LÝ DOANH SỐ THEO NGÀY (DAILY VIEW) ================= -->
+        <div id="daily-sales-view" class="hidden flex-1 flex-col justify-between bg-slate-100 overflow-y-auto no-scrollbar">
+            <div>
+                <!-- Sticky Daily Header -->
+                <header class="bg-emerald-800 text-white shadow-sm sticky top-0 z-30 pt-safe backdrop-blur-md bg-emerald-800/95">
+                    <div class="max-w-3xl mx-auto px-4 py-2.5 flex items-center justify-between">
+                        <button onclick="closeDailyView()" class="bg-white/15 active-touch text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Quay lại</span>
+                        </button>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-200" id="daily-view-title">
+                            Chi Tiết Tháng
+                        </span>
+                    </div>
+                </header>
+
+                <main class="max-w-3xl w-full mx-auto p-3.5 space-y-3">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4">
+                        <div class="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                            <div>
+                                <h2 class="font-bold text-slate-800 text-sm" id="daily-month-heading">Nhập Doanh Số Theo Ngày</h2>
+                                <p class="text-[11px] text-slate-400">Nhập sản lượng thực tế (tấn) cho từng ngày trong tháng</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase block">Tổng tháng</span>
+                                <span class="text-base font-extrabold text-emerald-700" id="daily-month-total">0 Tấn</span>
+                            </div>
+                        </div>
+
+                        <!-- Danh sách các ngày trong tháng -->
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" id="days-grid-container">
+                            <!-- Injected via JS -->
                         </div>
                     </div>
                 </main>
@@ -527,46 +585,28 @@
     <div id="sales-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden transform transition-all pb-safe">
             <div class="bg-emerald-800 text-white px-4 py-3 flex justify-between items-center shrink-0">
-                <h3 class="font-bold text-sm">Cài Đặt Doanh Số Năm & Tháng (Tấn)</h3>
+                <h3 class="font-bold text-sm">Cài Đặt Mục Tiêu Cả Năm (Tấn)</h3>
                 <button onclick="closeSalesModal()" class="w-7 h-7 rounded-full bg-white/10 active-touch flex items-center justify-center">
                     <i class="fa-solid fa-xmark text-sm"></i>
                 </button>
             </div>
             
             <form onsubmit="saveSalesConfig(event)" class="p-4 space-y-3 overflow-y-auto flex-1 no-scrollbar">
-                <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200">
                     <label class="block text-[10px] font-bold text-emerald-800 uppercase mb-1">Mục Tiêu Cả Năm (Tấn)</label>
                     <input type="number" id="form-target-sales" min="0" step="0.01" placeholder="VD: 50" class="w-full bg-white border border-emerald-300 text-slate-800 font-bold text-sm rounded-xl p-2 focus:ring-2 focus:ring-emerald-500 focus:outline-none" required>
-                </div>
-
-                <div class="border-t border-slate-200 pt-2">
-                    <h4 class="font-bold text-slate-700 text-[10px] uppercase mb-2">Nhập Doanh Số Thực Tế 12 Tháng (Tấn)</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        <script>
-                            for(let m=1; m<=12; m++) {
-                                document.write(`
-                                    <div class="bg-slate-50 p-1.5 rounded-xl border border-slate-200">
-                                        <label class="block text-[10px] font-semibold text-slate-600 mb-0.5">Tháng ${m}</label>
-                                        <div class="relative">
-                                            <input type="number" id="form-month-${m}" min="0" step="0.01" placeholder="0" class="w-full bg-white border border-slate-300 text-slate-800 text-xs rounded-lg p-1.5 pr-7 focus:ring-1 focus:ring-emerald-500 focus:outline-none font-bold">
-                                            <span class="absolute right-1.5 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">tấn</span>
-                                        </div>
-                                    </div>
-                                `);
-                            }
-                        </script>
-                    </div>
+                    <p class="text-[10px] text-emerald-600 mt-1">Sản lượng thực tế được tính tổng hợp tự động từ việc nhập liệu theo ngày của 12 tháng.</p>
                 </div>
 
                 <div class="pt-2 border-t border-slate-200 flex justify-end gap-2 shrink-0">
                     <button type="button" onclick="closeSalesModal()" class="px-3.5 py-2 border border-slate-300 text-slate-700 text-xs font-semibold rounded-xl active-touch">Hủy</button>
-                    <button type="submit" class="px-5 py-2 bg-emerald-600 active-touch text-white text-xs font-semibold rounded-xl shadow-sm">Lưu Doanh Số</button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 active-touch text-white text-xs font-semibold rounded-xl shadow-sm">Lưu Mục Tiêu</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- ADD / EDIT FARMER MODAL (CÓ TỰ ĐỘNG ĐIỀN ZALO KHI NHẬP SỐ ĐIỆN THOẠI) -->
+    <!-- ADD / EDIT FARMER MODAL -->
     <div id="farmer-modal-backdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
     <div id="farmer-modal" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-xl w-full max-w-md overflow-hidden transform transition-all pb-safe">
@@ -679,17 +719,17 @@
             {
                 id: "102",
                 district: "Huyện Gò Quao",
-                name: "Chiêu Siêu",
-                owner: "Chiêu Siêu",
-                phone: "0912345678",
+                name: "Năm Ấn",
+                owner: "Cô Năm",
+                phone: "0963633633",
                 level: "Cấp 2",
                 address: "Gò Quao, Huyện Gò Quao",
-                mapQuery: "VTNN Chiêu Siêu Gò Quao Kiên Giang",
-                note: "Phân bón & thuốc bảo vệ thực vật",
+                mapQuery: "Đại lý Năm Ấn Gò Quao",
+                note: "Lân supe, lân canxi, lân đen...",
                 targetSales: 50,
-                monthlySales: { 1: 3, 2: 4.5, 3: 5.2, 4: 2, 5: 3.5, 6: 4, 7: 3.8, 8: 5, 9: 1, 10: 0, 11: 0, 12: 0 },
+                dailySales: { 1: {}, 2: { 5: 5, 10: 8 }, 3: {} }, // Lưu doanh số theo ngày: {tháng: {ngày: số_tấn}}
                 farmers: [
-                    { id: "f1", name: "Nguyễn Văn Tèo", phone: "0987123456", area: "2.5 ha (25 công)", mapQuery: "Ruộng Nguyễn Văn Tèo Kênh 5 Gò Quao", image: "", zalo: "https://zalo.me/0987123456", products: "20 bao NPK 20-20-15" }
+                    { id: "f1", name: "Nguyễn Văn Tèo", phone: "0987123456", area: "2.5 ha", mapQuery: "Ruộng Tèo", image: "", zalo: "https://zalo.me/0987123456", products: "20 bao NPK" }
                 ],
                 createdAt: new Date().toISOString()
             }
@@ -699,6 +739,8 @@
         let agents = [];
         let activeAgentId = null;
         let currentFarmerBase64Image = "";
+        let isTotalTonnesVisible = false; // Mặc định ẩn số liệu tổng sản lượng
+        let activeMonthForDaily = 1;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAgents();
@@ -715,10 +757,26 @@
                 agents = defaultAgents;
                 saveToLocalStorage();
             }
+            // Đảm bảo cấu trúc dailySales tồn tại
+            agents.forEach(a => {
+                if (!a.dailySales) a.dailySales = {};
+            });
         }
 
         function saveToLocalStorage() {
             localStorage.setItem('kg_agents_data', JSON.stringify(agents));
+            updateStats();
+        }
+
+        /* ẨN / HIỆN TỔNG SẢN LƯỢNG TOÀN TỈNH */
+        function toggleTotalTonnesVisibility() {
+            isTotalTonnesVisible = !isTotalTonnesVisible;
+            const icon = document.getElementById('toggle-tonnes-icon');
+            if (isTotalTonnesVisible) {
+                icon.className = "fa-solid fa-eye";
+            } else {
+                icon.className = "fa-solid fa-eye-slash";
+            }
             updateStats();
         }
 
@@ -738,6 +796,8 @@
             activeAgentId = null;
             document.getElementById('detail-view').classList.add('hidden');
             document.getElementById('detail-view').classList.remove('flex');
+            document.getElementById('daily-sales-view').classList.add('hidden');
+            document.getElementById('daily-sales-view').classList.remove('flex');
             document.getElementById('home-view').classList.remove('hidden');
             renderAgents();
             window.scrollTo(0, 0);
@@ -778,11 +838,33 @@
             }
         }
 
+        // Tính tổng doanh số năm từ doanh số ngày của 12 tháng
+        function getAgentTotalTonnes(agent) {
+            let total = 0;
+            const dailySales = agent.dailySales || {};
+            for (let m = 1; m <= 12; m++) {
+                const daysObj = dailySales[m] || {};
+                for (let d in daysObj) {
+                    total += Number(daysObj[d]) || 0;
+                }
+            }
+            return total;
+        }
+
+        // Tính tổng doanh số của 1 tháng cụ thể từ các ngày trong tháng
+        function getMonthTotalTonnes(agent, month) {
+            let total = 0;
+            const dailySales = agent.dailySales || {};
+            const daysObj = dailySales[month] || {};
+            for (let d in daysObj) {
+                total += Number(daysObj[d]) || 0;
+            }
+            return total;
+        }
+
         function renderSalesTab(agent) {
             const target = Number(agent.targetSales) || 0;
-            let current = 0;
-            const monthly = agent.monthlySales || {};
-            for (let m = 1; m <= 12; m++) current += Number(monthly[m]) || 0;
+            let current = getAgentTotalTonnes(agent);
 
             const percent = target > 0 ? Math.min(Math.round((current / target) * 100), 999) : 0;
 
@@ -808,18 +890,109 @@
                 statusText.className = "text-[11px] font-semibold text-amber-600";
             }
 
+            // Render 12 Tháng (Chạm vào từng tháng mở giao diện nhập theo ngày)
             const monthlyContainer = document.getElementById('monthly-sales-grid');
             monthlyContainer.innerHTML = '';
             for (let m = 1; m <= 12; m++) {
-                const val = Number(monthly[m]) || 0;
-                const item = document.createElement('div');
-                item.className = `p-2 rounded-xl border flex flex-col justify-between ${val > 0 ? 'bg-emerald-50/80 border-emerald-200' : 'bg-slate-50 border-slate-200'}`;
+                const val = getMonthTotalTonnes(agent, m);
+                const item = document.createElement('button');
+                item.onclick = () => openDailyView(m);
+                item.className = `p-2.5 rounded-xl border text-left flex flex-col justify-between active-touch transition ${val > 0 ? 'bg-emerald-50/90 border-emerald-300' : 'bg-slate-50 border-slate-200 hover:border-emerald-200'}`;
                 item.innerHTML = `
-                    <span class="text-[10px] font-semibold text-slate-400">Tháng ${m}</span>
-                    <span class="text-xs font-bold ${val > 0 ? 'text-emerald-800' : 'text-slate-400'}">${formatTon(val)} tấn</span>
+                    <div class="flex items-center justify-between w-full">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase">Tháng ${m}</span>
+                        <i class="fa-solid fa-chevron-right text-[9px] text-slate-300"></i>
+                    </div>
+                    <span class="text-xs font-extrabold ${val > 0 ? 'text-emerald-800' : 'text-slate-400'} mt-1">${formatTon(val)} tấn</span>
                 `;
                 monthlyContainer.appendChild(item);
             }
+        }
+
+        /* GIAO DIỆN QUẢN LÝ DOANH SỐ THEO TỪNG NGÀY TRONG THÁNG */
+        function openDailyView(month) {
+            activeMonthForDaily = month;
+            const agent = agents.find(a => a.id === activeAgentId);
+            if (!agent) return;
+
+            document.getElementById('detail-view').classList.add('hidden');
+            document.getElementById('detail-view').classList.remove('flex');
+            document.getElementById('daily-sales-view').classList.remove('hidden');
+            document.getElementById('daily-sales-view').classList.add('flex');
+
+            document.getElementById('daily-view-title').textContent = `Tháng ${month} - ${agent.name}`;
+            document.getElementById('daily-month-heading').textContent = `Nhập Doanh Số Tháng ${month}`;
+            
+            renderDaysGrid(agent, month);
+            window.scrollTo(0, 0);
+        }
+
+        function closeDailyView() {
+            document.getElementById('daily-sales-view').classList.add('hidden');
+            document.getElementById('daily-sales-view').classList.remove('flex');
+            document.getElementById('detail-view').classList.remove('hidden');
+            document.getElementById('detail-view').classList.add('flex');
+            const agent = agents.find(a => a.id === activeAgentId);
+            if (agent) renderSalesTab(agent);
+        }
+
+        function getDaysInMonth(month) {
+            // Tháng 2 lấy 28/29 ngày, tháng 4,6,9,11 lấy 30 ngày, còn lại 31 ngày
+            if (month === 2) return 28;
+            if ([4, 6, 9, 11].includes(month)) return 30;
+            return 31;
+        }
+
+        function renderDaysGrid(agent, month) {
+            const container = document.getElementById('days-grid-container');
+            container.innerHTML = '';
+
+            if (!agent.dailySales) agent.dailySales = {};
+            if (!agent.dailySales[month]) agent.dailySales[month] = {};
+
+            const daysCount = getDaysInMonth(month);
+            let monthTotal = 0;
+
+            for (let d = 1; d <= daysCount; d++) {
+                const dayVal = agent.dailySales[month][d] !== undefined ? agent.dailySales[month][d] : "";
+                monthTotal += Number(dayVal) || 0;
+
+                const dayCard = document.createElement('div');
+                dayCard.className = "bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex flex-col justify-between";
+                dayCard.innerHTML = `
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Ngày ${d}</label>
+                    <div class="relative">
+                        <input type="number" min="0" step="0.01" value="${dayVal}" oninput="updateDaySales(${month}, ${d}, this.value)" placeholder="0" class="w-full bg-white border border-slate-300 text-slate-800 text-xs rounded-lg p-1.5 pr-8 focus:ring-2 focus:ring-emerald-500 focus:outline-none font-bold">
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">tấn</span>
+                    </div>
+                `;
+                container.appendChild(dayCard);
+            }
+
+            document.getElementById('daily-month-total').textContent = `${formatTon(monthTotal)} Tấn`;
+        }
+
+        function updateDaySales(month, day, value) {
+            const agent = agents.find(a => a.id === activeAgentId);
+            if (!agent) return;
+
+            if (!agent.dailySales) agent.dailySales = {};
+            if (!agent.dailySales[month]) agent.dailySales[month] = {};
+
+            const num = Number(value);
+            if (num > 0) {
+                agent.dailySales[month][day] = num;
+            } else {
+                delete agent.dailySales[month][day];
+            }
+
+            saveToLocalStorage();
+
+            // Cập nhật lại tổng tháng hiển thị ngay lập tức
+            let monthTotal = 0;
+            const daysObj = agent.dailySales[month] || {};
+            for (let d in daysObj) monthTotal += Number(daysObj[d]) || 0;
+            document.getElementById('daily-month-total').textContent = `${formatTon(monthTotal)} Tấn`;
         }
 
         function renderFarmersTab(agent) {
@@ -999,11 +1172,6 @@
             const agent = agents.find(a => a.id === activeAgentId);
             if (!agent) return;
             document.getElementById('form-target-sales').value = agent.targetSales || "";
-            const monthly = agent.monthlySales || {};
-            for (let m = 1; m <= 12; m++) {
-                const el = document.getElementById(`form-month-${m}`);
-                if (el) el.value = monthly[m] !== undefined ? monthly[m] : "";
-            }
             document.getElementById('sales-modal-backdrop').classList.remove('hidden');
             document.getElementById('sales-modal').classList.remove('hidden');
         }
@@ -1018,15 +1186,10 @@
             const agent = agents.find(a => a.id === activeAgentId);
             if (!agent) return;
             agent.targetSales = Number(document.getElementById('form-target-sales').value) || 0;
-            if (!agent.monthlySales) agent.monthlySales = {};
-            for (let m = 1; m <= 12; m++) {
-                const el = document.getElementById(`form-month-${m}`);
-                agent.monthlySales[m] = el ? (Number(el.value) || 0) : 0;
-            }
             saveToLocalStorage();
             renderSalesTab(agent);
             closeSalesModal();
-            showToast("Đã cập nhật doanh số!");
+            showToast("Đã cập nhật mục tiêu năm!");
         }
 
         /* FARMER MODAL & IMAGE LOGIC (TỈ LỆ 3:4) */
@@ -1314,10 +1477,7 @@
 
             const mapQueryTerm = agent.mapQuery && agent.mapQuery.trim() !== '' ? agent.mapQuery : `${agent.name} ${agent.district} Kiên Giang`;
             
-            let totalTonnes = 0;
-            const monthly = agent.monthlySales || {};
-            for (let m = 1; m <= 12; m++) totalTonnes += Number(monthly[m]) || 0;
-
+            let totalTonnes = getAgentTotalTonnes(agent);
             const target = Number(agent.targetSales) || 0;
             const realPercent = target > 0 ? Math.round((totalTonnes / target) * 100) : 0;
 
@@ -1382,12 +1542,15 @@
             
             let totalProvinceTonnes = 0;
             agents.forEach(a => {
-                const monthly = a.monthlySales || {};
-                for (let m = 1; m <= 12; m++) {
-                    totalProvinceTonnes += Number(monthly[m]) || 0;
-                }
+                totalProvinceTonnes += getAgentTotalTonnes(a);
             });
-            document.getElementById('stat-total-tonnes').textContent = `${formatTon(totalProvinceTonnes)} Tấn`;
+
+            const tonnesEl = document.getElementById('stat-total-tonnes');
+            if (isTotalTonnesVisible) {
+                tonnesEl.textContent = `${formatTon(totalProvinceTonnes)} Tấn`;
+            } else {
+                tonnesEl.textContent = "*****";
+            }
         }
 
         function openModal(editMode = false) {
@@ -1428,7 +1591,7 @@
             } else {
                 agents.unshift({
                     id: Date.now().toString(), district, level, name, owner, phone, address, mapQuery, note,
-                    targetSales: 50, monthlySales: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0 },
+                    targetSales: 50, dailySales: {},
                     farmers: [], createdAt: new Date().toISOString()
                 });
                 showToast("Thêm đại lý thành công!");
@@ -1459,9 +1622,7 @@
             if (agents.length === 0) { alert("Chưa có dữ liệu!"); return; }
             let csvContent = "\uFEFFSTT,Tỉnh,Huyện/Thị xã,Tên Đại Lý,Cấp Đại Lý,Chủ Đại Lý,Số Điện Thoại,Địa Chỉ,Mục Tiêu (Tấn),Hiện Tại (Tấn),Hoàn Thành\n";
             agents.forEach((a, index) => {
-                let current = 0;
-                const monthly = a.monthlySales || {};
-                for (let m = 1; m <= 12; m++) current += Number(monthly[m]) || 0;
+                let current = getAgentTotalTonnes(a);
                 const target = a.targetSales || 0;
                 const percent = target > 0 ? Math.round((current / target) * 100) : 0;
                 csvContent += `${index + 1},Kiên Giang,"${a.district}","${a.name}","${a.level || ''}","${a.owner || ''}","${a.phone || ''}","${a.address || ''}","${target}","${current}","${percent}%"\n`;
