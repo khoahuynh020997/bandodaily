@@ -1,1 +1,32 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Bản Đồ Đại Lý</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#065f46">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/styles.css?v=4">
+</head>
+<body class="bg-slate-100 text-slate-800 h-full flex flex-col antialiased">
+<div id="app-root"></div>
+<script>
+// Tải lại trang đầy đủ từ commit trước nếu cần - redirect tạm
+fetch('https://raw.githubusercontent.com/khoahuynh020997/bandodaily/3e55633ddfd2605e4ccfa01a719060677cf05d45/index.html')
+  .then(r => r.text())
+  .then(html => {
+    document.open();
+    document.write(html.replace('js/app.js?v=3','js/app.js?v=4').replace('sw.js?v=3','sw.js?v=4'));
+    document.close();
+  })
+  .catch(() => {
+    document.getElementById('app-root').innerHTML = '<p style="padding:2rem;text-align:center">Đang khôi phục... Vui lòng tải lại trang sau vài giây.</p>';
+  });
+</script>
+<script type="module" src="js/app.js?v=4"></script>
+</body>
+</html>
