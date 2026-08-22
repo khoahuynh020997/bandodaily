@@ -2,7 +2,7 @@
  * Service Worker - Cho phép app chạy offline
  */
 
-const CACHE_NAME = 'ban-do-dai-ly-v1';
+const CACHE_NAME = 'ban-do-dai-ly-v2';
 
 // Các file cần cache để dùng offline
 const ASSETS_TO_CACHE = [
