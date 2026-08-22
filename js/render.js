@@ -1,78 +1,85 @@
 /**
- * render.js - Các hàm render giao diện
+ * render.js - Render giao diện
  */
 
-import {
-    agents, districts, currentDistrict, activeAgentId,
-    getAgentTotalTonnes, getMonthTotalTonnes, getDaysInMonth, formatTon,
-    isTotalTonnesVisible, isMonthTonnesVisible
-} from './data.js';
-
+import { state, getAgentTotalTonnes, getMonthTotalTonnes, getDaysInMonth, formatTon } from './data.js';
 import { openLightbox } from './ui.js';
 
-// ==================== STATS ====================
 export function updateStats() {
-    document.getElementById('stat-total').textContent = agents.length;
+    document.getElementById('stat-total').textContent = state.agents.length;
 
     const currentMonth = new Date().getMonth() + 1;
     document.getElementById('current-month-label').textContent = `Sản Lượng T${currentMonth}`;
 
     let totalProvince = 0;
     let monthProvince = 0;
-
-    agents.forEach(a => {
+    state.agents.forEach((a) => {
         totalProvince += getAgentTotalTonnes(a);
         monthProvince += getMonthTotalTonnes(a, currentMonth);
     });
 
     document.getElementById('stat-total-tonnes').textContent =
-        isTotalTonnesVisible ? `${formatTon(totalProvince)} Tấn` : '*****';
+        state.isTotalTonnesVisible ? `${formatTon(totalProvince)} Tấn` : '*****';
 
     document.getElementById('stat-month-tonnes').textContent =
-        isMonthTonnesVisible ? `${formatTon(monthProvince)} Tấn` : '*****';
+        state.isMonthTonnesVisible ? `${formatTon(monthProvince)} Tấn` : '*****';
+
+    const totalIcon = document.getElementById('toggle-tonnes-icon');
+    const monthIcon = document.getElementById('toggle-month-icon');
+    if (totalIcon) totalIcon.className = state.isTotalTonnesVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    if (monthIcon) monthIcon.className = state.isMonthTonnesVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
 }
 
-// ==================== AGENT LIST ====================
 export function renderAgents() {
     const listContainer = document.getElementById('agent-list');
     const emptyState = document.getElementById('empty-state');
-    const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+    const searchInput = document.getElementById('search-input');
+    const searchVal = (searchInput?.value || '').toLowerCase().trim();
 
-    document.getElementById('selected-district-display').textContent = currentDistrict;
+    const selectedDisplay = document.getElementById('selected-district-display');
+    if (selectedDisplay) selectedDisplay.textContent = state.currentDistrict;
 
     let filtered = [];
     if (searchVal.length > 0) {
-        filtered = agents.filter(a =>
-            a.name.toLowerCase().includes(searchVal) ||
+        filtered = state.agents.filter((a) =>
+            (a.name || '').toLowerCase().includes(searchVal) ||
             (a.owner && a.owner.toLowerCase().includes(searchVal)) ||
             (a.phone && a.phone.includes(searchVal)) ||
             (a.address && a.address.toLowerCase().includes(searchVal)) ||
-            (a.mapQuery && a.mapQuery.toLowerCase().includes(searchVal))
+            (a.mapQuery && a.mapQuery.toLowerCase().includes(searchVal)) ||
+            (a.district && a.district.toLowerCase().includes(searchVal))
         );
         document.getElementById('search-mode-hint').textContent = 'Kết quả tìm kiếm toàn tỉnh';
     } else {
-        filtered = agents.filter(a => a.district === currentDistrict);
+        filtered = state.agents.filter((a) => a.district === state.currentDistrict);
         document.getElementById('search-mode-hint').textContent = 'Chạm thẻ để xem chi tiết';
     }
 
     const titleEl = document.getElementById('current-district-title');
-const titleText = searchVal
-    ? `Kết quả ("${searchVal}")`
-    : currentDistrict;
-titleEl.innerHTML = `
-    <span>${titleText}</span>
-    <span class="text-[11px] font-semibold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full" id="current-district-count">${filtered.length} đại lý</span>
-`;
+    const titleText = searchVal ? `Kết quả ("${searchVal}")` : state.currentDistrict;
+    titleEl.innerHTML = `
+        <span>${titleText}</span>
+        <span class="text-[11px] font-semibold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full" id="current-district-count">${filtered.length} đại lý</span>
+    `;
 
     listContainer.innerHTML = '';
 
     if (filtered.length === 0) {
         emptyState.classList.remove('hidden');
         emptyState.classList.add('flex');
+        const emptyTitle = emptyState.querySelector('h3');
+        const emptyDesc = emptyState.querySelector('p');
+        if (searchVal) {
+            if (emptyTitle) emptyTitle.textContent = 'Không tìm thấy đại lý';
+            if (emptyDesc) emptyDesc.textContent = 'Không có kết quả phù hợp với từ khóa tìm kiếm của bạn.';
+        } else {
+            if (emptyTitle) emptyTitle.textContent = `${state.currentDistrict} chưa có đại lý`;
+            if (emptyDesc) emptyDesc.textContent = 'Thêm đại lý mới cho huyện này hoặc chọn huyện khác.';
+        }
     } else {
         emptyState.classList.add('hidden');
         emptyState.classList.remove('flex');
-        filtered.forEach(agent => {
+        filtered.forEach((agent) => {
             listContainer.appendChild(createAgentCard(agent));
         });
     }
@@ -113,29 +120,23 @@ function createAgentCard(agent) {
                     </button>
                 </div>
             </div>
-
             <div class="flex items-center justify-between gap-2 mb-1">
                 <h3 class="font-bold text-slate-800 text-base flex-1 truncate">${agent.name}</h3>
                 <div class="flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shrink-0">
-                    <div class="w-4 h-4 rounded-full border-2 border-emerald-500 flex items-center justify-center text-[8px] font-extrabold text-emerald-700">✓</div>
                     <span class="text-xs font-extrabold text-emerald-800">${realPercent}%</span>
                 </div>
             </div>
-
             <div class="space-y-1 text-xs text-slate-600 mb-2.5">
                 ${agent.owner ? `<p class="flex items-center gap-1.5"><i class="fa-regular fa-user text-slate-400 w-3.5"></i> ${agent.owner}</p>` : ''}
                 ${agent.phone ? `<p class="flex items-center gap-1.5"><i class="fa-solid fa-phone text-emerald-600 w-3.5"></i><a href="tel:${agent.phone}" class="font-bold text-emerald-700">${agent.phone}</a></p>` : ''}
                 ${agent.address ? `<p class="flex items-start gap-1.5 text-[11px] text-slate-500"><i class="fa-solid fa-location-dot text-slate-400 w-3.5 mt-0.5"></i><span>${agent.address}</span></p>` : ''}
             </div>
-
             <div class="bg-emerald-50/70 p-2 rounded-xl border border-emerald-100 text-xs text-emerald-800 mb-2 flex items-center justify-between">
                 <span class="font-medium text-[11px]"><i class="fa-solid fa-chart-line text-emerald-600 me-1"></i> Doanh số:</span>
                 <span class="font-extrabold text-emerald-700">${formatTon(totalTonnes)} Tấn</span>
             </div>
-
             ${agent.note ? `<div class="bg-slate-50 p-2 rounded-lg border border-slate-100 text-[11px] text-slate-500 mb-2 flex items-start gap-1.5"><i class="fa-solid fa-circle-info text-emerald-600 mt-0.5 shrink-0 text-[10px]"></i><span class="truncate">${agent.note}</span></div>` : ''}
         </div>
-
         <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 mt-1">
             ${agent.phone
                 ? `<a href="tel:${agent.phone}" class="flex-1 bg-emerald-50 active-touch text-emerald-700 font-semibold py-1.5 px-2 rounded-xl text-xs flex items-center justify-center gap-1"><i class="fa-solid fa-phone text-[10px]"></i> Gọi ngay</a>`
@@ -149,7 +150,6 @@ function createAgentCard(agent) {
     return div;
 }
 
-// ==================== DETAIL VIEW ====================
 export function renderAgentDetail(agent) {
     document.getElementById('detail-header-district').textContent = agent.district;
     document.getElementById('detail-agent-name').textContent = agent.name;
@@ -199,7 +199,7 @@ export function renderSalesTab(agent) {
 
     const statusText = document.getElementById('detail-sales-status-text');
     if (percent >= 100) {
-        statusText.textContent = '🎉 Xuất sắc!';
+        statusText.textContent = 'Xuất sắc';
         statusText.className = 'text-[11px] font-bold text-emerald-600';
     } else if (percent >= 50) {
         statusText.textContent = 'Khá tốt';
@@ -234,13 +234,14 @@ export function renderDaysGrid(agent, month) {
     container.innerHTML = '';
 
     if (!agent.dailySales) agent.dailySales = {};
-    if (!agent.dailySales[month]) agent.dailySales[month] = {};
+    if (!agent.dailySales[month] && !agent.dailySales[String(month)]) agent.dailySales[month] = {};
 
     const daysCount = getDaysInMonth(month);
     let monthTotal = 0;
+    const daysObj = agent.dailySales[month] || agent.dailySales[String(month)] || {};
 
     for (let d = 1; d <= daysCount; d++) {
-        const dayVal = agent.dailySales[month][d] !== undefined ? agent.dailySales[month][d] : '';
+        const dayVal = daysObj[d] !== undefined ? daysObj[d] : (daysObj[String(d)] !== undefined ? daysObj[String(d)] : '');
         monthTotal += Number(dayVal) || 0;
 
         const dayCard = document.createElement('div');
@@ -289,7 +290,6 @@ export function renderFarmersTab(agent) {
 
         const card = document.createElement('div');
         card.className = 'bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 relative items-start';
-
         card.innerHTML = `
             <div class="w-20 aspect-3-4 rounded-xl overflow-hidden bg-slate-100 shrink-0 border border-slate-200 flex items-center justify-center cursor-pointer active-touch farmer-img"
                  data-img="${farmer.image || ''}">
@@ -297,7 +297,6 @@ export function renderFarmersTab(agent) {
                     ? `<img src="${farmer.image}" class="w-full h-full object-cover">`
                     : `<i class="fa-solid fa-user text-slate-300 text-lg"></i>`}
             </div>
-
             <div class="flex-1 w-full space-y-2">
                 <div class="flex items-start justify-between gap-2">
                     <div class="flex items-center gap-2">
@@ -313,7 +312,6 @@ export function renderFarmersTab(agent) {
                         </button>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 gap-1 text-xs text-slate-600 bg-slate-50/80 p-2 rounded-xl border border-slate-100">
                     ${farmer.phone
                         ? `<p class="flex items-center gap-1"><i class="fa-solid fa-phone text-emerald-600 text-[10px] w-3"></i><a href="tel:${farmer.phone}" class="font-semibold text-emerald-700">${farmer.phone}</a></p>`
@@ -321,7 +319,6 @@ export function renderFarmersTab(agent) {
                     ${farmer.area ? `<p class="flex items-center gap-1"><i class="fa-solid fa-vector-square text-amber-600 text-[10px] w-3"></i><span>Diện tích: <strong>${farmer.area}</strong></span></p>` : ''}
                     ${farmer.products ? `<p class="flex items-start gap-1 text-slate-500"><i class="fa-solid fa-bag-shopping text-slate-400 text-[10px] w-3 mt-0.5"></i><span>Ghi chú: ${farmer.products}</span></p>` : ''}
                 </div>
-
                 <div class="flex items-center justify-between pt-1 border-t border-slate-100">
                     <span class="text-[10px] text-slate-400 flex items-center gap-1 truncate max-w-[130px]">
                         <i class="fa-solid fa-location-crosshairs text-emerald-600"></i>
@@ -345,39 +342,38 @@ export function renderFarmersTab(agent) {
     });
 }
 
-// ==================== DISTRICTS ====================
 export function renderDistrictGrid(filterKeyword = '') {
     const container = document.getElementById('district-grid-container');
     container.innerHTML = '';
     const keyword = filterKeyword.toLowerCase().trim();
-    const filtered = districts.filter(d => d.toLowerCase().includes(keyword));
+    const filtered = state.districts.filter((d) => d.toLowerCase().includes(keyword));
 
     if (filtered.length === 0) {
         container.innerHTML = `<p class="col-span-full text-center py-4 text-slate-400 text-xs">Không tìm thấy huyện phù hợp</p>`;
         return;
     }
 
-    filtered.forEach(dist => {
-        const count = agents.filter(a => a.district === dist).length;
-        const isSelected = dist === currentDistrict;
+    filtered.forEach((dist) => {
+        const count = state.agents.filter((a) => a.district === dist).length;
+        const isSelected = dist === state.currentDistrict;
         const card = document.createElement('div');
-        card.className = `p-3 rounded-2xl border flex items-center justify-between transition-all ${
+        card.className = `p-1.5 rounded-2xl border flex items-center justify-between transition-all ${
             isSelected
                 ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-900 shadow-sm'
                 : 'bg-slate-50 border-slate-200 text-slate-700'
         }`;
 
         card.innerHTML = `
-            <div class="flex items-center gap-2 flex-1 cursor-pointer" data-action="select-district" data-name="${dist}">
+            <button type="button" class="flex items-center gap-2 flex-1 min-h-[44px] min-w-0 cursor-pointer text-left px-2 rounded-xl" data-action="select-district" data-name="${dist}">
                 <i class="fa-solid fa-location-dot ${isSelected ? 'text-emerald-600' : 'text-slate-400'} text-xs"></i>
-                <span class="font-bold text-xs truncate max-w-[140px]">${dist}</span>
-            </div>
-            <div class="flex items-center gap-2">
-                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}">${count} đ/lý</span>
-                <button data-action="edit-district" data-name="${dist}" class="w-6 h-6 rounded-lg bg-slate-200 active-touch text-slate-600 flex items-center justify-center text-[10px]" title="Sửa tên">
+                <span class="font-bold text-xs truncate">${dist}</span>
+                <span class="ml-auto text-[10px] px-2 py-0.5 rounded-full font-bold ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}">${count} đ/lý</span>
+            </button>
+            <div class="flex items-center gap-1 pr-1">
+                <button type="button" data-action="edit-district" data-name="${dist}" class="w-8 h-8 rounded-lg bg-slate-200 active-touch text-slate-600 flex items-center justify-center text-[10px]" title="Sửa tên">
                     <i class="fa-solid fa-pen"></i>
                 </button>
-                <button data-action="delete-district" data-name="${dist}" class="w-6 h-6 rounded-lg bg-rose-100 active-touch text-rose-600 flex items-center justify-center text-[10px]" title="Xóa">
+                <button type="button" data-action="delete-district" data-name="${dist}" class="w-8 h-8 rounded-lg bg-rose-100 active-touch text-rose-600 flex items-center justify-center text-[10px]" title="Xóa">
                     <i class="fa-solid fa-trash"></i>
                 </button>
             </div>
@@ -389,7 +385,7 @@ export function renderDistrictGrid(filterKeyword = '') {
 export function populateDistrictDropdown() {
     const select = document.getElementById('form-district');
     select.innerHTML = '';
-    districts.forEach(dist => {
+    state.districts.forEach((dist) => {
         const opt = document.createElement('option');
         opt.value = dist;
         opt.textContent = dist;
@@ -397,13 +393,12 @@ export function populateDistrictDropdown() {
     });
 }
 
-// ==================== RANKING ====================
 export function renderRankingList() {
     const container = document.getElementById('ranking-list-container');
     container.innerHTML = '';
 
-    const sorted = [...agents]
-        .map(a => ({ ...a, totalTonnes: getAgentTotalTonnes(a) }))
+    const sorted = [...state.agents]
+        .map((a) => ({ ...a, totalTonnes: getAgentTotalTonnes(a) }))
         .sort((a, b) => b.totalTonnes - a.totalTonnes);
 
     if (sorted.length === 0) {

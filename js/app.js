@@ -3,13 +3,12 @@
  */
 
 import {
-    districts, agents, currentDistrict, activeAgentId, activeMonthForDaily,
-    isTotalTonnesVisible, isMonthTonnesVisible,
+    state,
     loadDistricts, loadAgents, saveDistricts, saveToLocalStorage,
     findAgent, addAgent, updateAgent, deleteAgent,
     addFarmer, updateFarmer, deleteFarmer,
     addDistrict, renameDistrict, canDeleteDistrict, removeDistrict,
-    processImageToBase64, getAgentTotalTonnes, getDaysInMonth, formatTon
+    processImageToBase64, getAgentTotalTonnes, formatTon
 } from './data.js';
 
 import {
@@ -23,19 +22,20 @@ import {
     populateDistrictDropdown, renderRankingList
 } from './render.js';
 
-import * as Data from './data.js';
-
-// ==================== INIT ====================
 document.addEventListener('DOMContentLoaded', () => {
-    loadDistricts();
-    loadAgents();
-    populateDistrictDropdown();
-    renderAgents();
-    updateStats();
-    bindGlobalEvents();
+    try {
+        loadDistricts();
+        loadAgents();
+        populateDistrictDropdown();
+        renderAgents();
+        updateStats();
+        bindGlobalEvents();
+    } catch (err) {
+        console.error('Khởi tạo app lỗi:', err);
+        showToast('Không tải được dữ liệu, đang dùng mặc định', 'error');
+    }
 });
 
-// ==================== GLOBAL EVENT BINDING ====================
 function bindGlobalEvents() {
     document.getElementById('search-input')?.addEventListener('input', handleSearchInput);
     document.getElementById('clear-search-btn')?.addEventListener('click', clearSearch);
@@ -50,7 +50,6 @@ function bindGlobalEvents() {
             const id = btn.dataset.id;
             if (action === 'edit') editAgent(id);
             if (action === 'delete') confirmDeleteAgent(id);
-            return;
         }
     });
 
@@ -100,25 +99,25 @@ function bindGlobalEvents() {
     });
 }
 
-// ==================== VIEW NAVIGATION ====================
 function showDetailView(agentId) {
     const agent = findAgent(agentId);
     if (!agent) return;
-    Data.activeAgentId = agentId;
+    state.activeAgentId = agentId;
     showView('detail-view');
     renderAgentDetail(agent);
     switchDetailTab('sales');
 }
 
 function showHomeView() {
-    Data.activeAgentId = null;
+    state.activeAgentId = null;
     showView('home-view');
     renderAgents();
+    updateStats();
 }
 
 function openDailyView(month) {
-    Data.activeMonthForDaily = month;
-    const agent = findAgent(Data.activeAgentId);
+    state.activeMonthForDaily = month;
+    const agent = findAgent(state.activeAgentId);
     if (!agent) return;
 
     showView('daily-sales-view');
@@ -129,7 +128,7 @@ function openDailyView(month) {
 
 function closeDailyView() {
     showView('detail-view');
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (agent) renderSalesTab(agent);
 }
 
@@ -152,22 +151,16 @@ function switchDetailTab(tabName) {
     }
 }
 
-// ==================== VISIBILITY TOGGLE ====================
 function toggleTotalTonnesVisibility() {
-    Data.isTotalTonnesVisible = !Data.isTotalTonnesVisible;
-    const icon = document.getElementById('toggle-tonnes-icon');
-    icon.className = Data.isTotalTonnesVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    state.isTotalTonnesVisible = !state.isTotalTonnesVisible;
     updateStats();
 }
 
 function toggleMonthTonnesVisibility() {
-    Data.isMonthTonnesVisible = !Data.isMonthTonnesVisible;
-    const icon = document.getElementById('toggle-month-icon');
-    icon.className = Data.isMonthTonnesVisible ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+    state.isMonthTonnesVisible = !state.isMonthTonnesVisible;
     updateStats();
 }
 
-// ==================== SEARCH ====================
 function handleSearchInput() {
     const input = document.getElementById('search-input');
     const clearBtn = document.getElementById('clear-search-btn');
@@ -189,7 +182,6 @@ function clearSearch() {
     renderAgents();
 }
 
-// ==================== DISTRICT DIALOG ====================
 function openDistrictDialog() {
     document.getElementById('district-search-input').value = '';
     document.getElementById('clear-district-search-btn').classList.add('hidden');
@@ -223,9 +215,12 @@ function clearDistrictSearch() {
 }
 
 function selectDistrictFromDialog(dist) {
-    Data.currentDistrict = dist;
+    if (!dist) return;
+    state.currentDistrict = dist;
     closeDistrictDialog();
     renderAgents();
+    updateStats();
+    showToast(`Đã chuyển sang ${dist}`);
 }
 
 function openAddDistrictModal(oldName = null) {
@@ -260,6 +255,7 @@ function saveDistrict(e) {
     }
     populateDistrictDropdown();
     renderDistrictGrid(document.getElementById('district-search-input').value);
+    renderAgents();
     closeAddDistrictModal();
 }
 
@@ -282,7 +278,6 @@ function confirmDeleteDistrict(distName) {
     );
 }
 
-// ==================== RANKING ====================
 function openRankingModal() {
     renderRankingList();
     openModalById('ranking-modal-backdrop', 'ranking-modal');
@@ -292,14 +287,13 @@ function closeRankingModal() {
     closeModalById('ranking-modal-backdrop', 'ranking-modal');
 }
 
-// ==================== AGENT MODAL ====================
 function openModal(editMode = false) {
     openModalById('modal-backdrop', 'agent-modal');
     if (!editMode) {
         document.getElementById('modal-title').textContent = 'Thêm Đại Lý Mới';
         document.getElementById('agent-form').reset();
         document.getElementById('agent-id').value = '';
-        document.getElementById('form-district').value = Data.currentDistrict;
+        document.getElementById('form-district').value = state.currentDistrict;
     }
 }
 
@@ -323,14 +317,14 @@ function saveAgent(event) {
     if (id) {
         const updated = updateAgent(id, data);
         showToast('Đã cập nhật đại lý!');
-        if (Data.activeAgentId === id && updated) renderAgentDetail(updated);
+        if (state.activeAgentId === id && updated) renderAgentDetail(updated);
     } else {
         addAgent(data);
         showToast('Thêm đại lý thành công!');
     }
 
     saveToLocalStorage(updateStats);
-    Data.currentDistrict = data.district;
+    state.currentDistrict = data.district;
     renderAgents();
     closeModal();
 }
@@ -351,7 +345,7 @@ function editAgent(id) {
 }
 
 function editAgentFromDetail() {
-    if (Data.activeAgentId) editAgent(Data.activeAgentId);
+    if (state.activeAgentId) editAgent(state.activeAgentId);
 }
 
 function confirmDeleteAgent(id) {
@@ -363,16 +357,15 @@ function confirmDeleteAgent(id) {
         () => {
             deleteAgent(id);
             saveToLocalStorage(updateStats);
-            if (Data.activeAgentId === id) showHomeView();
+            if (state.activeAgentId === id) showHomeView();
             else renderAgents();
             showToast('Đã xóa đại lý thành công!');
         }
     );
 }
 
-// ==================== SALES CONFIG ====================
 function openConfigSalesModal() {
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent) return;
     document.getElementById('form-target-sales').value = agent.targetSales || '';
     openModalById('sales-modal-backdrop', 'sales-modal');
@@ -384,7 +377,7 @@ function closeSalesModal() {
 
 function saveSalesConfig(e) {
     e.preventDefault();
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent) return;
     agent.targetSales = Number(document.getElementById('form-target-sales').value) || 0;
     saveToLocalStorage(updateStats);
@@ -394,7 +387,7 @@ function saveSalesConfig(e) {
 }
 
 function updateDaySales(month, day, value) {
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent) return;
 
     if (!agent.dailySales) agent.dailySales = {};
@@ -415,7 +408,6 @@ function updateDaySales(month, day, value) {
     document.getElementById('daily-month-total').textContent = `${formatTon(monthTotal)} Tấn`;
 }
 
-// ==================== FARMER ====================
 let currentFarmerBase64Image = '';
 
 function openAddFarmerModal(editFarmerData = null) {
@@ -481,7 +473,7 @@ async function handleFarmerImageSelect(event) {
 
 function saveFarmer(e) {
     e.preventDefault();
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent) return;
 
     const id = document.getElementById('farmer-form-id').value;
@@ -496,10 +488,10 @@ function saveFarmer(e) {
     };
 
     if (id) {
-        updateFarmer(Data.activeAgentId, id, data);
+        updateFarmer(state.activeAgentId, id, data);
         showToast('Đã cập nhật nông dân!');
     } else {
-        addFarmer(Data.activeAgentId, data);
+        addFarmer(state.activeAgentId, data);
         showToast('Thêm nông dân thành công!');
     }
 
@@ -509,23 +501,23 @@ function saveFarmer(e) {
 }
 
 function editFarmer(farmerId) {
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent?.farmers) return;
-    const farmer = agent.farmers.find(f => f.id === farmerId);
+    const farmer = agent.farmers.find((f) => f.id === farmerId);
     if (farmer) openAddFarmerModal(farmer);
 }
 
 function confirmDeleteFarmer(farmerId) {
-    const agent = findAgent(Data.activeAgentId);
+    const agent = findAgent(state.activeAgentId);
     if (!agent?.farmers) return;
-    const farmer = agent.farmers.find(f => f.id === farmerId);
+    const farmer = agent.farmers.find((f) => f.id === farmerId);
     if (!farmer) return;
 
     openDeleteModal(
         'Xác Nhận Xóa Nông Dân',
         `Bạn có chắc muốn xóa nông dân <strong class="text-slate-800">"${farmer.name}"</strong> khỏi danh sách?`,
         () => {
-            deleteFarmer(Data.activeAgentId, farmerId);
+            deleteFarmer(state.activeAgentId, farmerId);
             saveToLocalStorage(updateStats);
             renderFarmersTab(agent);
             showToast('Đã xóa nông dân!');
@@ -542,13 +534,12 @@ function autoFillZalo(phoneInput) {
     }
 }
 
-// ==================== AGENT IMAGE ====================
 async function handleAgentImageSelect(event) {
     const file = event.target.files[0];
     if (!file) return;
     try {
         const base64 = await processImageToBase64(file);
-        const agent = findAgent(Data.activeAgentId);
+        const agent = findAgent(state.activeAgentId);
         if (agent) {
             agent.image = base64;
             saveToLocalStorage(updateStats);
@@ -560,18 +551,18 @@ async function handleAgentImageSelect(event) {
     }
 }
 
-// ==================== EXPORT ====================
 function exportToCSV() {
-    if (agents.length === 0) {
+    if (state.agents.length === 0) {
         alert('Chưa có dữ liệu!');
         return;
     }
     let csvContent = '\uFEFFSTT,Tỉnh,Huyện/Thị xã,Tên Đại Lý,Chủ Đại Lý,Số Điện Thoại,Địa Chỉ,Mục Tiêu (Tấn),Hiện Tại (Tấn),Hoàn Thành\n';
-    agents.forEach((a, index) => {
+    state.agents.forEach((a, index) => {
         const current = getAgentTotalTonnes(a);
         const target = a.targetSales || 0;
         const percent = target > 0 ? Math.round((current / target) * 100) : 0;
-        csvContent += `${index + 1},Kiên Giang,"${a.district}","${a.name}","${a.owner || ''}","${a.phone || ''}","${a.address || ''}","${target}","${current}","${percent}%"\n`;
+        const cell = (v) => `"${String(v).replace(/"/g, '""')}"`;
+        csvContent += `${index + 1},Kiên Giang,${cell(a.district)},${cell(a.name)},${cell(a.owner || '')},${cell(a.phone || '')},${cell(a.address || '')},${cell(target)},${cell(current)},${cell(`${percent}%`)}\n`;
     });
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -584,7 +575,6 @@ function exportToCSV() {
     showToast('Đã xuất file Excel!');
 }
 
-// ==================== EXPOSE TO WINDOW ====================
 window.showHomeView = showHomeView;
 window.showDetailView = showDetailView;
 window.openDailyView = openDailyView;

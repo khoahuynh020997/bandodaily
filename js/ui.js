@@ -1,5 +1,5 @@
 /**
- * ui.js - Các hàm tiện ích UI chung (toast, modal, view switching)
+ * ui.js - Toast, modal, chuyển màn hình
  */
 
 export function showToast(message, type = 'success') {
@@ -25,18 +25,24 @@ export function showToast(message, type = 'success') {
 }
 
 export function openModalById(backdropId, modalId) {
-    document.getElementById(backdropId)?.classList.remove('hidden');
-    document.getElementById(modalId)?.classList.remove('hidden');
+    const backdrop = document.getElementById(backdropId);
+    const modal = document.getElementById(modalId);
+    backdrop?.classList.remove('hidden');
+    modal?.classList.remove('hidden');
+    modal?.classList.add('flex');
 }
 
 export function closeModalById(backdropId, modalId) {
-    document.getElementById(backdropId)?.classList.add('hidden');
-    document.getElementById(modalId)?.classList.add('hidden');
+    const backdrop = document.getElementById(backdropId);
+    const modal = document.getElementById(modalId);
+    backdrop?.classList.add('hidden');
+    modal?.classList.add('hidden');
+    modal?.classList.remove('flex');
 }
 
 export function showView(viewId) {
     const views = ['home-view', 'detail-view', 'daily-sales-view'];
-    views.forEach(id => {
+    views.forEach((id) => {
         const el = document.getElementById(id);
         if (!el) return;
         if (id === viewId) {
