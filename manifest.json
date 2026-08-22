@@ -1,0 +1,26 @@
+{
+  "name": "Bản Đồ Đại Lý - Kiên Giang",
+  "short_name": "Đại Lý KG",
+  "description": "Quản lý đại lý phân phối tỉnh Kiên Giang",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#064e3b",
+  "theme_color": "#065f46",
+  "orientation": "portrait-primary",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
