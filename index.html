@@ -1182,21 +1182,218 @@
         function closeDistrictDialog() { document.getElementById('district-dialog-backdrop').classList.add('hidden'); document.getElementById('district-dialog').classList.add('hidden'); }
         function openRankingModal() { /* sẽ hoàn thiện */ document.getElementById('ranking-modal-backdrop').classList.remove('hidden'); document.getElementById('ranking-modal').classList.remove('hidden'); }
         function closeRankingModal() { document.getElementById('ranking-modal-backdrop').classList.add('hidden'); document.getElementById('ranking-modal').classList.add('hidden'); }
-        function populateDistrictDropdown() {
-            const select = document.getElementById('form-district');
-            if (!select) return;
-            select.innerHTML = '';
-            districts.forEach(dist => {
-                const opt = document.createElement('option');
-                opt.value = dist; opt.textContent = dist;
-                select.appendChild(opt);
-            });
+        // ===================== QUẢN LÝ HUYỆN =====================
+function populateDistrictDropdown() {
+    const select = document.getElementById('form-district');
+    if (!select) return;
+    select.innerHTML = '';
+    districts.forEach(dist => {
+        const opt = document.createElement('option');
+        opt.value = dist;
+        opt.textContent = dist;
+        select.appendChild(opt);
+    });
+    // Tự chọn huyện hiện tại
+    if (currentDistrict) select.value = currentDistrict;
+}
+
+function renderDistrictGrid(filterKeyword = '') {
+    const container = document.getElementById('district-grid-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const keyword = (filterKeyword || '').toLowerCase().trim();
+    const filtered = districts.filter(d => d.toLowerCase().includes(keyword));
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-center py-6 text-slate-400 text-xs">Không tìm thấy huyện nào</p>`;
+        return;
+    }
+
+    filtered.forEach(dist => {
+        const count = agents.filter(a => a.district === dist).length;
+        const isSelected = dist === currentDistrict;
+
+        const card = document.createElement('div');
+        card.className = `p-3 rounded-2xl border flex items-center justify-between transition-all ${
+            isSelected 
+                ? 'bg-emerald-50 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-900 shadow-sm' 
+                : 'bg-slate-50 border-slate-200 text-slate-700'
+        }`;
+
+        card.innerHTML = `
+            <div class="flex items-center gap-2 flex-1 cursor-pointer" onclick="selectDistrictFromDialog('${dist}')">
+                <i class="fa-solid fa-location-dot ${isSelected ? 'text-emerald-600' : 'text-slate-400'} text-xs"></i>
+                <span class="font-bold text-xs truncate max-w-[140px]">${dist}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
+                }">${count} đ/lý</span>
+                <button onclick="openAddDistrictModal('${dist}')" class="w-6 h-6 rounded-lg bg-slate-200 active-touch text-slate-600 flex items-center justify-center text-[10px]" title="Sửa tên">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="confirmDeleteDistrict('${dist}')" class="w-6 h-6 rounded-lg bg-rose-100 active-touch text-rose-600 flex items-center justify-center text-[10px]" title="Xóa">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function selectDistrictFromDialog(dist) {
+    currentDistrict = dist;
+    closeDistrictDialog();
+    renderAgents();
+    populateDistrictDropdown();
+}
+
+function openAddDistrictModal(oldName = null) {
+    document.getElementById('district-name-input').value = oldName || '';
+    document.getElementById('district-old-name').value = oldName || '';
+    document.getElementById('district-modal-title').textContent = oldName ? "Sửa Tên Huyện" : "Thêm Huyện Mới";
+    document.getElementById('district-form-backdrop').classList.remove('hidden');
+    document.getElementById('district-form-modal').classList.remove('hidden');
+}
+
+function closeAddDistrictModal() {
+    document.getElementById('district-form-backdrop').classList.add('hidden');
+    document.getElementById('district-form-modal').classList.add('hidden');
+}
+
+async function saveDistrict(e) {
+    e.preventDefault();
+    const oldName = document.getElementById('district-old-name').value;
+    const newName = document.getElementById('district-name-input').value.trim();
+
+    if (!newName) {
+        alert("Vui lòng nhập tên huyện!");
+        return;
+    }
+
+    if (oldName) {
+        // Sửa tên
+        const idx = districts.indexOf(oldName);
+        if (idx !== -1) districts[idx] = newName;
+
+        // Cập nhật tất cả đại lý thuộc huyện cũ
+        for (const a of agents) {
+            if (a.district === oldName) {
+                a.district = newName;
+                await putToStore('agents', a);
+            }
         }
-        function renderDistrictGrid() { /* sẽ hoàn thiện ở lần sau nếu cần */ }
+        if (currentDistrict === oldName) currentDistrict = newName;
+
+        // Xóa bản ghi cũ, thêm bản ghi mới trong IndexedDB
+        await deleteFromStore('districts', oldName);
+        await putToStore('districts', { id: newName, name: newName });
+
+        showToast("Đã đổi tên huyện!");
+    } else {
+        // Thêm mới
+        if (districts.includes(newName)) {
+            alert("Huyện này đã tồn tại!");
+            return;
+        }
+        districts.push(newName);
+        currentDistrict = newName;
+        await putToStore('districts', { id: newName, name: newName });
+        showToast("Đã thêm huyện mới!");
+    }
+
+    populateDistrictDropdown();
+    renderDistrictGrid(document.getElementById('district-search-input')?.value || '');
+    closeAddDistrictModal();
+    renderAgents();
+}
+
+function confirmDeleteDistrict(distName) {
+    const count = agents.filter(a => a.district === distName).length;
+    if (count > 0) {
+        alert(`Không thể xóa huyện "${distName}" vì đang chứa ${count} đại lý!\nHãy xóa hoặc chuyển đại lý sang huyện khác trước.`);
+        return;
+    }
+
+    if (confirm(`Bạn chắc chắn muốn xóa huyện "${distName}"?`)) {
+        districts = districts.filter(d => d !== distName);
+        deleteFromStore('districts', distName).then(() => {
+            if (currentDistrict === distName && districts.length > 0) {
+                currentDistrict = districts[0];
+            }
+            renderDistrictGrid();
+            populateDistrictDropdown();
+            renderAgents();
+            showToast("Đã xóa huyện!");
+        });
+    }
+}
+
+function handleDistrictSearchInput() {
+    const input = document.getElementById('district-search-input');
+    const clearBtn = document.getElementById('clear-district-search-btn');
+    if (input.value.trim().length > 0) {
+        clearBtn.classList.remove('hidden');
+        clearBtn.classList.add('flex');
+    } else {
+        clearBtn.classList.add('hidden');
+        clearBtn.classList.remove('flex');
+    }
+    renderDistrictGrid(input.value);
+}
+
+function clearDistrictSearch() {
+    const input = document.getElementById('district-search-input');
+    input.value = '';
+    document.getElementById('clear-district-search-btn').classList.add('hidden');
+    renderDistrictGrid();
+}
+
+// Sửa lại hàm openDistrictDialog cho chắc chắn
+function openDistrictDialog() {
+    document.getElementById('district-search-input').value = '';
+    document.getElementById('clear-district-search-btn').classList.add('hidden');
+    renderDistrictGrid();
+    document.getElementById('district-dialog-backdrop').classList.remove('hidden');
+    document.getElementById('district-dialog').classList.remove('hidden');
+}
+
+function closeDistrictDialog() {
+    document.getElementById('district-dialog-backdrop').classList.add('hidden');
+    document.getElementById('district-dialog').classList.add('hidden');
+}
         function exportToCSV() { alert("Tính năng xuất Excel sẽ được hoàn thiện ngay sau"); }
 
-        // Khởi chạy lại để chắc chắn
-        // initApp() đã được gọi ở Phần 1
+        // ============================================
+// KHỞI CHẠY APP
+// ============================================
+async function initApp() {
+    try {
+        await openDatabase();
+        
+        // Thử migrate từ localStorage cũ (nếu có)
+        await migrateFromLocalStorage();
+
+        // Load dữ liệu
+        await loadDistricts();
+        await loadAgents();
+        
+        // Cập nhật giao diện
+        populateDistrictDropdown();
+        renderDistrictGrid();
+        renderAgents();
+        updateStats();
+        
+        showToast("Đã sẵn sàng (IndexedDB)");
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi khởi tạo database: " + err.message);
+    }
+}
+
+// Chạy khi trang load xong
+window.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
