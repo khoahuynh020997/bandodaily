@@ -56,10 +56,13 @@ export function renderAgents() {
     }
 
     const titleEl = document.getElementById('current-district-title');
-    titleEl.firstElementChild.textContent = searchVal
-        ? `Kết quả tìm kiếm ("${searchVal}")`
-        : currentDistrict;
-    document.getElementById('current-district-count').textContent = `${filtered.length} đại lý`;
+const titleText = searchVal
+    ? `Kết quả ("${searchVal}")`
+    : currentDistrict;
+titleEl.innerHTML = `
+    <span>${titleText}</span>
+    <span class="text-[11px] font-semibold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full" id="current-district-count">${filtered.length} đại lý</span>
+`;
 
     listContainer.innerHTML = '';
 
