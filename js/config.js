@@ -6,8 +6,18 @@ export const STORAGE_KEYS = {
     DISTRICTS: 'kg_districts_data_v3',
     AGENTS: 'kg_agents_data_v3',
     LEGACY_DISTRICTS: 'kg_districts_data',
-    LEGACY_AGENTS: 'kg_agents_data'
+    LEGACY_AGENTS: 'kg_agents_data',
+    ACTIVATED: 'kg_bandodaily_activated_v1'
 };
+
+/** Mã kích hoạt hợp lệ (16 ký tự, dạng XXXX-XXXX-XXXX-XXXX) */
+export const VALID_CODES = [
+    'K9X2-P7M4-L8W1-R3J6',
+    '8V4T-1N6Y-Z9B5-Q3C7',
+    'H7F3-G2M9-K5P8-W1X4',
+    '3D6J-R8B2-9L5T-P1C7',
+    'M2W8-X5V1-4N9Q-K7Y3'
+];
 
 export const DEFAULT_DISTRICTS = [
     "Huyện Gò Quao", "Huyện Giang Thành", "Huyện Tân Hiệp", "TP. Rạch Giá",
