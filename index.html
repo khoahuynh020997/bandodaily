@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="css/styles.css?v=6">
+<link rel="stylesheet" href="css/styles.css?v=7">
 </head>
 <body class="bg-slate-100 text-slate-800 h-full flex flex-col antialiased">
 <div id="app-root" style="padding:2rem;text-align:center;color:#64748b">Đang tải Bản Đồ Đại Lý...</div>
@@ -19,9 +19,9 @@ fetch('https://raw.githubusercontent.com/khoahuynh020997/bandodaily/58c636317732
   .then(function(r) { return r.text(); })
   .then(function(html) {
     html = html
-      .replace(/js\/app\.js\?v=\d+/g, 'js/app.js?v=6')
-      .replace(/sw\.js\?v=\d+/g, 'sw.js?v=6')
-      .replace(/css\/styles\.css\?v=\d+/g, 'css/styles.css?v=6');
+      .replace(/js\/app\.js\?v=\d+/g, 'js/app.js?v=7')
+      .replace(/sw\.js\?v=\d+/g, 'sw.js?v=7')
+      .replace(/css\/styles\.css\?v=\d+/g, 'css/styles.css?v=7');
     document.open();
     document.write(html);
     document.close();
