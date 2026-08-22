@@ -39,7 +39,6 @@ export function loadAgents() {
     if (stored) {
         try {
             const parsed = JSON.parse(stored);
-            // Nếu dữ liệu rỗng hoặc không phải mảng → dùng mặc định
             if (Array.isArray(parsed) && parsed.length > 0) {
                 agents = parsed;
             } else {
@@ -55,12 +54,6 @@ export function loadAgents() {
         agents = structuredClone(DEFAULT_AGENTS);
         saveAgents();
     }
-    agents.forEach(a => {
-        if (!a.dailySales) a.dailySales = {};
-        if (!a.farmers) a.farmers = [];
-        if (a.image === undefined) a.image = "";
-    });
-}
     agents.forEach(a => {
         if (!a.dailySales) a.dailySales = {};
         if (!a.farmers) a.farmers = [];
