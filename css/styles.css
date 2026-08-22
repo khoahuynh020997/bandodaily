@@ -1,0 +1,42 @@
+/* Custom styles for Bản Đồ Đại Lý */
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
+.pt-safe { padding-top: env(safe-area-inset-top, 16px); }
+.pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+.active-touch:active {
+    transform: scale(0.96);
+    opacity: 0.85;
+}
+
+input, select, textarea {
+    font-size: 16px !important;
+    user-select: text;
+}
+
+.aspect-3-4 {
+    aspect-ratio: 3 / 4;
+}
+
+#home-view,
+#detail-view,
+#daily-sales-view {
+    transition: opacity 0.2s ease;
+}
+
+#toast {
+    pointer-events: none;
+}
+
+#progress-ring {
+    transition: stroke-dasharray 0.7s ease-out;
+}
