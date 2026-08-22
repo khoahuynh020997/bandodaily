@@ -32,14 +32,13 @@ function ensureActivationModal() {
                     <i class="fa-solid fa-key"></i>
                 </div>
                 <h3 class="text-base font-bold text-slate-800">Kích hoạt Bản Đồ Đại Lý</h3>
-                <p class="text-xs text-slate-400 mt-1.5 tracking-wide uppercase opacity-60">NHẬP KEY ĐỂ SỬ DỤNG</p>
             </div>
             <form id="activation-form" class="space-y-3">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Mã kích hoạt</label>
-                    <input type="text" id="activation-code-input" placeholder="VD: K9X2-P7M4-L8W1-R3J6"
+                    <input type="text" id="activation-code-input" placeholder="NHẬP KEY ĐỂ SỬ DỤNG"
                            autocomplete="off" autocapitalize="characters"
-                           class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm font-mono tracking-wider rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-center uppercase"
+                           class="w-full bg-slate-50 border border-slate-300 text-slate-800 text-sm tracking-wide rounded-xl p-3 focus:ring-2 focus:ring-emerald-500 focus:outline-none text-center"
                            required>
                     <p id="activation-error" class="hidden text-xs text-rose-600 mt-1.5 text-center font-semibold"></p>
                 </div>
