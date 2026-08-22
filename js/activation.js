@@ -32,7 +32,7 @@ function ensureActivationModal() {
                     <i class="fa-solid fa-key"></i>
                 </div>
                 <h3 class="text-base font-bold text-slate-800">Kích hoạt Bản Đồ Đại Lý</h3>
-                <p class="text-xs text-slate-500 mt-1">Nhập mã kích hoạt 16 ký tự để sử dụng ứng dụng</p>
+                <p class="text-xs text-slate-400 mt-1.5 tracking-wide uppercase opacity-60">NHẬP KEY ĐỂ SỬ DỤNG</p>
             </div>
             <form id="activation-form" class="space-y-3">
                 <div>
@@ -47,7 +47,15 @@ function ensureActivationModal() {
                     <i class="fa-solid fa-unlock-keyhole me-1"></i> Kích hoạt
                 </button>
             </form>
-            <p class="text-[10px] text-slate-400 text-center">Liên hệ hỗ trợ: <a href="tel:0845325488" class="text-emerald-600 font-bold">0845.325.488</a></p>
+            <div class="text-center space-y-1.5 pt-1 border-t border-slate-100">
+                <p class="text-[11px] text-slate-500">
+                    Liên hệ hỗ trợ nhận key:
+                    <a href="http://zalo.me/0845325488" target="_blank" rel="noopener" class="text-emerald-600 font-bold underline underline-offset-2">zalo.me/0845325488</a>
+                </p>
+                <p class="text-[10px] text-slate-400">
+                    Phần mềm được viết bởi <strong class="text-emerald-700">KHOA HOA KỲ</strong>
+                </p>
+            </div>
         </div>
     </div>`;
     document.body.appendChild(wrap);
