@@ -38,7 +38,14 @@ export function loadAgents() {
     const stored = localStorage.getItem(STORAGE_KEYS.AGENTS);
     if (stored) {
         try {
-            agents = JSON.parse(stored);
+            const parsed = JSON.parse(stored);
+            // Nếu dữ liệu rỗng hoặc không phải mảng → dùng mặc định
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                agents = parsed;
+            } else {
+                agents = structuredClone(DEFAULT_AGENTS);
+                saveAgents();
+            }
         } catch (e) {
             console.warn('Lỗi parse agents, dùng mặc định', e);
             agents = structuredClone(DEFAULT_AGENTS);
@@ -48,6 +55,12 @@ export function loadAgents() {
         agents = structuredClone(DEFAULT_AGENTS);
         saveAgents();
     }
+    agents.forEach(a => {
+        if (!a.dailySales) a.dailySales = {};
+        if (!a.farmers) a.farmers = [];
+        if (a.image === undefined) a.image = "";
+    });
+}
     agents.forEach(a => {
         if (!a.dailySales) a.dailySales = {};
         if (!a.farmers) a.farmers = [];
