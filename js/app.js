@@ -22,19 +22,96 @@ import {
     populateDistrictDropdown, renderRankingList
 } from './render.js';
 
+import { STORAGE_KEYS, VALID_CODES } from './config.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     try {
-        loadDistricts();
-        loadAgents();
-        populateDistrictDropdown();
-        renderAgents();
-        updateStats();
-        bindGlobalEvents();
+        if (!isActivated()) {
+            showActivationScreen();
+            return;
+        }
+        initApp();
     } catch (err) {
         console.error('Khởi tạo app lỗi:', err);
         showToast('Không tải được dữ liệu, đang dùng mặc định', 'error');
     }
 });
+
+function isActivated() {
+    return localStorage.getItem(STORAGE_KEYS.ACTIVATED) === '1';
+}
+
+function setActivated() {
+    localStorage.setItem(STORAGE_KEYS.ACTIVATED, '1');
+}
+
+function normalizeCode(raw) {
+    return String(raw || '')
+        .trim()
+        .toUpperCase()
+        .replace(/\s+/g, '')
+        .replace(/–|—/g, '-');
+}
+
+function showActivationScreen() {
+    const backdrop = document.getElementById('activation-backdrop');
+    const modal = document.getElementById('activation-modal');
+    if (backdrop) backdrop.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    document.getElementById('app-container')?.classList.add('hidden');
+}
+
+function hideActivationScreen() {
+    const backdrop = document.getElementById('activation-backdrop');
+    const modal = document.getElementById('activation-modal');
+    if (backdrop) backdrop.classList.add('hidden');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+    document.getElementById('app-container')?.classList.remove('hidden');
+}
+
+function submitActivationCode(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('activation-code-input');
+    const errorEl = document.getElementById('activation-error');
+    const code = normalizeCode(input?.value);
+
+    if (!code) {
+        if (errorEl) {
+            errorEl.textContent = 'Vui lòng nhập mã kích hoạt.';
+            errorEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+    const valid = VALID_CODES.some((c) => normalizeCode(c) === code);
+    if (!valid) {
+        if (errorEl) {
+            errorEl.textContent = 'Mã không hợp lệ. Vui lòng kiểm tra lại.';
+            errorEl.classList.remove('hidden');
+        }
+        return;
+    }
+
+    setActivated();
+    hideActivationScreen();
+    initApp();
+    showToast('Kích hoạt thành công!');
+}
+
+function initApp() {
+    loadDistricts();
+    loadAgents();
+    populateDistrictDropdown();
+    renderAgents();
+    updateStats();
+    bindGlobalEvents();
+}
 
 function bindGlobalEvents() {
     document.getElementById('search-input')?.addEventListener('input', handleSearchInput);
@@ -262,7 +339,7 @@ function saveDistrict(e) {
 function confirmDeleteDistrict(distName) {
     const result = canDeleteDistrict(distName);
     if (!result.success) {
-        alert(`Không thể xóa huyện "${distName}" vì đang chứa ${result.count} đại lý! Hãy xóa hoặc chuyển đại lý sang huyện khác trước.`);
+        alert(`Không thể xóa huyện "${distName}" vì đang có ${result.count} đại lý! Hãy xóa hoặc chuyển đại lý sang huyện khác trước.`);
         return;
     }
     openDeleteModal(
@@ -609,3 +686,4 @@ window.clearSearch = clearSearch;
 window.clearDistrictSearch = clearDistrictSearch;
 window.handleSearchInput = handleSearchInput;
 window.handleDistrictSearchInput = handleDistrictSearchInput;
+window.submitActivationCode = submitActivationCode;
